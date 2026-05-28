@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 
 function Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
@@ -26,9 +25,12 @@ function Login() {
 
       navigate("/dashboard");
     } catch (error) {
-      console.log(error);
-
-      alert("Login Failed");
+      console.error(error);
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Login Failed";
+      alert(message);
     }
   };
 
@@ -58,6 +60,10 @@ function Login() {
         <button onClick={handleLogin}>
           Login
         </button>
+        <p style={{ marginTop: 16, color: "#666" }}>
+          Don't have an account?{' '}
+          <Link to="/register">Register here</Link>
+        </p>
       </div>
     </div>
   );

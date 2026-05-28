@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Pujas from "./pages/Pujas";
 import Purohits from "./pages/Purohits";
@@ -17,6 +18,11 @@ function App() {
         <Route
           path="/"
           element={<Login />}
+        />
+
+        <Route
+          path="/register"
+          element={<Register />}
         />
 
         <Route
