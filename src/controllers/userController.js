@@ -17,18 +17,11 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = {
-  register,
-};
-
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const result = await userService.loginUser(
-      email,
-      password
-    );
+    const result = await userService.loginUser(email, password);
 
     res.status(200).json({
       success: true,

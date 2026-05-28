@@ -1,10 +1,14 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const registerUser = async (userData) => {
   const { name, email, password } = userData;
 
-  // hash password
+  if (!name || !email || !password) {
+    throw new Error("Name, email, and password are required");
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const query = `
@@ -20,13 +24,11 @@ const registerUser = async (userData) => {
   return result.rows[0];
 };
 
-module.exports = {
-  registerUser,
-};
-
-const jwt = require("jsonwebtoken");
-
 const loginUser = async (email, password) => {
+  if (!email || !password) {
+    throw new Error("Email and password are required");
+  }
+
   const query = `
     SELECT * FROM users
     WHERE email = $1
@@ -40,14 +42,13 @@ const loginUser = async (email, password) => {
     throw new Error("User not found");
   }
 
-  const isPasswordValid = await bcrypt.compare(
-    password,
-    user.password
-  );
+  const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
     throw new Error("Invalid password");
   }
+
+  const jwtSecret = process.env.JWT_SECRET || "puja-app-secret";
 
   const token = jwt.sign(
     {
@@ -55,7 +56,7 @@ const loginUser = async (email, password) => {
       email: user.email,
       role: user.role,
     },
-    process.env.JWT_SECRET,
+    jwtSecret,
     {
       expiresIn: "1d",
     }
