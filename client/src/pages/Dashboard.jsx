@@ -1,543 +1,226 @@
-import { useEffect, useState } from "react"
-import api from "../services/api"
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
-const Dashboard = () => {
+function Dashboard() {
+  const [pujas, setPujas] = useState([]);
 
-  const [pujas, setPujas] = useState([])
-  const [purohits, setPurohits] = useState([])
-  // Quick add purohit fields
-  const [phName, setPhName] = useState("")
-  const [phContact, setPhContact] = useState("")
-  const [phExperience, setPhExperience] = useState("")
-  const [phSpecialization, setPhSpecialization] = useState("")
-  const [phAvailability, setPhAvailability] = useState("")
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "",
+    description: "",
+    duration: "",
+  });
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [duration, setDuration] = useState("")
-  const [benefits, setBenefits] = useState("")
-  const [bestTime, setBestTime] = useState("")
-  const [mantras, setMantras] = useState("")
-  const [procedures, setProcedures] = useState("")
-  const [ingredients, setIngredients] = useState("")
-  const [rules, setRules] = useState("")
-  const [checklist, setChecklist] = useState("")
+  const [editingId, setEditingId] = useState(null);
 
-  const [editingId, setEditingId] = useState(null)
-  const [pujaPurohitId, setPujaPurohitId] = useState("")
-  const [purohitFilterId, setPurohitFilterId] = useState("")
-
-  // FETCH PUJAS
   const fetchPujas = async () => {
-
     try {
-
-      const response = await api.get("/pujas")
-
-      setPujas(response.data)
-
-    } catch (error) {
-
-      console.log(error)
-    }
-  }
-
-  // FETCH PUROHITS
-  const fetchPurohits = async () => {
-    try {
-      const res = await api.get("/purohits")
-      setPurohits(res.data)
+      const res = await api.get("/pujas");
+      setPujas(res.data.data || []);
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
 
-  const handleAddPurohit = async (e) => {
-    e.preventDefault()
-
-    try {
-      await api.post("/purohits", {
-        name: phName,
-        contact: phContact,
-        experience: phExperience,
-        specialization: phSpecialization,
-        availability: phAvailability
-      })
-
-      setPhName("")
-      setPhContact("")
-      setPhExperience("")
-      setPhSpecialization("")
-      setPhAvailability("")
-
-      fetchPurohits()
-    } catch (err) {
-      console.log(err)
-      alert("Failed to add purohit")
-    }
-  }
-
-  // LOAD DATA
   useEffect(() => {
+    fetchPujas();
+  }, []);
 
-    fetchPujas()
-    fetchPurohits()
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  }, [])
-
-  // HANDLE SUBMIT
   const handleSubmit = async (e) => {
-
-    e.preventDefault()
+    e.preventDefault();
 
     try {
-
-      const pujaData = {
-        title,
-        description,
-        category,
-        duration,
-          benefits,
-        bestTime,
-        mantras,
-        procedures,
-        ingredients,
-        rules,
-        checklist
-          ,purohit_id: pujaPurohitId || null
-      }
-
-      // UPDATE
       if (editingId) {
-
-        await api.put(
-          `/pujas/${editingId}`,
-          pujaData
-        )
-
+        await api.put(`/pujas/${editingId}`, formData);
+      } else {
+        await api.post("/pujas", formData);
       }
 
-      // CREATE
-      else {
+      setFormData({
+        title: "",
+        category: "",
+        description: "",
+        duration: "",
+      });
 
-        await api.post(
-          "/pujas",
-          pujaData
-        )
-      }
+      setEditingId(null);
 
-      // REFRESH DATA
-      fetchPujas()
-
-      // CLEAR FORM
-      setTitle("")
-      setDescription("")
-      setCategory("")
-      setDuration("")
-      setBenefits("")
-      setBestTime("")
-      setMantras("")
-      setProcedures("")
-      setIngredients("")
-      setRules("")
-      setChecklist("")
-      setPujaPurohitId("")
-
-      // RESET EDIT MODE
-      setEditingId(null)
-
-    } catch (error) {
-
-      console.log(error)
+      fetchPujas();
+    } catch (err) {
+      console.log(err);
     }
-  }
+  };
 
-  // HANDLE EDIT
   const handleEdit = (puja) => {
+    setEditingId(puja.id);
 
-    setTitle(puja.title)
-    setDescription(puja.description)
-    setCategory(puja.category)
-    setDuration(puja.duration)
-    setBenefits(puja.benefits || "")
-    setBestTime(puja.best_time || puja.bestTime || "")
-    setMantras(puja.mantras || "")
-    setProcedures(puja.procedures || "")
-    setIngredients(puja.ingredients || "")
-    setRules(puja.rules || "")
-    setChecklist(puja.checklist || "")
-    setPujaPurohitId(puja.purohit_id || "")
+    setFormData({
+      title: puja.title || "",
+      category: puja.category || "",
+      description: puja.description || "",
+      duration: puja.duration || "",
+    });
+  };
 
-    setEditingId(puja.id)
-  }
-
-  // HANDLE DELETE
   const handleDelete = async (id) => {
-
     try {
-
-      await api.delete(`/pujas/${id}`)
-
-      fetchPujas()
-
-    } catch (error) {
-
-      console.log(error)
+      await api.delete(`/pujas/${id}`);
+      fetchPujas();
+    } catch (err) {
+      console.log(err);
     }
-  }
+  };
 
-  const renderDetailList = (value) => {
-    if (!value) return null
-
-    const items = value
-      .split(/\r?\n|,/) 
-      .map((item) => item.trim())
-      .filter(Boolean)
-
-    if (!items.length) return null
-
-    return (
-      <ul style={{ margin: "8px 0 0", paddingLeft: "18px" }}>
-        {items.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
-      </ul>
-    )
-  }
-
-  // normalize the selected filter value and compute filtered list
-  const selectedPurohitFilter = String(purohitFilterId)
-  const filteredPujas = pujas.filter((puja) => {
-    if (selectedPurohitFilter === "" || selectedPurohitFilter === "all") return true
-    if (selectedPurohitFilter === "__unassigned") return !puja.purohit_id
-    return String(puja.purohit_id) === selectedPurohitFilter
-  })
-
-  // compute counts of pujas per purohit (and unassigned)
-  const purohitCounts = pujas.reduce((acc, p) => {
-    const key = p.purohit_id ? String(p.purohit_id) : "__unassigned"
-    acc[key] = (acc[key] || 0) + 1
-    return acc
-  }, {})
+  const logoutHandler = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
 
   return (
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
 
-    <div className="dashboard-page">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
 
-      <header className="dashboard-header">
         <div>
-          <p className="dashboard-eyebrow">Puja Management</p>
-          <h1>Puja Dashboard</h1>
-          <p className="dashboard-intro">
-            Add and manage puja entries with rich details, rituals, ingredients, and checklists.
+          <h1 className="text-3xl font-bold text-gray-800">
+            Puja Dashboard
+          </h1>
+
+          <p className="text-gray-600">
+            Manage your pujas easily
           </p>
         </div>
-        <div className="dashboard-meta">
-          <span className="dashboard-badge">{pujas.length} puja{pujas.length === 1 ? "" : "s"}</span>
-        </div>
-      </header>
 
-      <main className="dashboard-main">
-        <section className="dashboard-panel form-panel">
-          <div className="panel-header">
-            <div>
-              <p className="panel-label">New Puja</p>
-              <h2>{editingId ? "Edit Puja" : "Create Puja"}</h2>
-            </div>
-          </div>
+        <button
+          onClick={logoutHandler}
+          className="bg-black text-white px-5 py-2 rounded-xl"
+        >
+          Logout
+        </button>
 
-          <form onSubmit={handleSubmit} className="puja-form">
-            <div className="form-row">
-              <label>
-                Title
-                <input
-                  type="text"
-                  placeholder="Enter puja title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </label>
+      </div>
 
-              <label>
-                Category
-                <input
-                  type="text"
-                  placeholder="Enter category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                />
-              </label>
-            </div>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <label>
-              Description
-              <textarea
-                rows="3"
-                placeholder="Short description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </label>
+        {/* Form */}
+        <div className="bg-white p-6 rounded-2xl shadow-md">
 
-            <div className="form-row">
-              <label>
-                Duration
-                <input
-                  type="text"
-                  placeholder="e.g. 45 minutes"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                />
-              </label>
+          <h2 className="text-2xl font-bold mb-5">
+            {editingId ? "Edit Puja" : "Add Puja"}
+          </h2>
 
-              <label>
-                Best Time
-                <input
-                  type="text"
-                  placeholder="e.g. Morning"
-                  value={bestTime}
-                  onChange={(e) => setBestTime(e.target.value)}
-                />
-              </label>
-            </div>
+          <form onSubmit={handleSubmit}>
 
-            <label>
-              Assign Purohit
-              <select value={pujaPurohitId} onChange={(e) => setPujaPurohitId(e.target.value)}>
-                <option value="">-- None --</option>
-                {purohits.map((ph) => (
-                  <option key={ph.id} value={ph.id}>{ph.name} {ph.specialization ? `(${ph.specialization})` : ''}</option>
-                ))}
-              </select>
-            </label>
+            <input
+              type="text"
+              name="title"
+              placeholder="Title"
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
+            />
 
-            <label>
-              Benefits
-              <textarea
-                rows="3"
-                placeholder="Comma or newline separated"
-                value={benefits}
-                onChange={(e) => setBenefits(e.target.value)}
-              />
-            </label>
+            <input
+              type="text"
+              name="category"
+              placeholder="Category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
+            />
 
-            <label>
-              Mantras
-              <textarea
-                rows="3"
-                placeholder="Comma or newline separated"
-                value={mantras}
-                onChange={(e) => setMantras(e.target.value)}
-              />
-            </label>
+            <textarea
+              name="description"
+              placeholder="Description"
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
+            />
 
-            <label>
-              Procedures
-              <textarea
-                rows="3"
-                placeholder="Comma or newline separated"
-                value={procedures}
-                onChange={(e) => setProcedures(e.target.value)}
-              />
-            </label>
+            <input
+              type="text"
+              name="duration"
+              placeholder="Duration"
+              value={formData.duration}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
+            />
 
-            <label>
-              Ingredients
-              <textarea
-                rows="3"
-                placeholder="Comma or newline separated"
-                value={ingredients}
-                onChange={(e) => setIngredients(e.target.value)}
-              />
-            </label>
-
-            <label>
-              Rules
-              <textarea
-                rows="3"
-                placeholder="Comma or newline separated"
-                value={rules}
-                onChange={(e) => setRules(e.target.value)}
-              />
-            </label>
-
-            <label>
-              Checklist
-              <textarea
-                rows="3"
-                placeholder="Comma or newline separated"
-                value={checklist}
-                onChange={(e) => setChecklist(e.target.value)}
-              />
-            </label>
-
-            <button type="submit" className="primary-button">
+            <button
+              type="submit"
+              className="w-full bg-black text-white py-3 rounded-xl font-semibold"
+            >
               {editingId ? "Update Puja" : "Add Puja"}
             </button>
+
           </form>
+        </div>
 
-          <div className="quick-add-panel">
-            <div className="quick-add-header">
-              <p className="panel-label">Quick Add</p>
-              <h3>Add Purohit</h3>
-            </div>
-            <form onSubmit={handleAddPurohit} className="quick-add-form">
-              <input placeholder="Name" value={phName} onChange={(e) => setPhName(e.target.value)} />
-              <input placeholder="Contact" value={phContact} onChange={(e) => setPhContact(e.target.value)} />
-              <input placeholder="Experience" value={phExperience} onChange={(e) => setPhExperience(e.target.value)} />
-              <input placeholder="Specialization" value={phSpecialization} onChange={(e) => setPhSpecialization(e.target.value)} />
-              <input placeholder="Availability" value={phAvailability} onChange={(e) => setPhAvailability(e.target.value)} />
-              <div className="quick-add-actions">
-                <button type="submit">Add Purohit</button>
-              </div>
-            </form>
-          </div>
-        </section>
+        {/* Puja List */}
+        <div className="lg:col-span-2">
 
-        <section className="dashboard-panel cards-panel">
-          <div className="panel-header">
-            <div>
-              <p className="panel-label">Saved Pujas</p>
-              <h2>All Pujas</h2>
-            </div>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-          <div className="filter-toolbar">
-            <div className="filter-group">
-              <span className="filter-label">Filter by Purohit</span>
-              <select
-                value={purohitFilterId}
-                onChange={(e) => setPurohitFilterId(e.target.value)}
-                className="filter-select"
+            {pujas.map((puja) => (
+              <div
+                key={puja.id}
+                className="bg-white p-5 rounded-2xl shadow-md"
               >
-                <option value="">All Purohits ({pujas.length})</option>
-                <option value="__unassigned">Unassigned ({purohitCounts["__unassigned"] || 0})</option>
-                {purohits.map((ph) => (
-                  <option key={ph.id} value={String(ph.id)}>{ph.name} ({purohitCounts[String(ph.id)] || 0})</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => setPurohitFilterId("")}
-                className="filter-clear-button"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="filter-count">Showing {filteredPujas.length} of {pujas.length} puja{pujas.length === 1 ? "" : "s"}</div>
-          </div>
 
-          <div className="card-grid">
-            {filteredPujas.map((puja) => (
-              <article key={puja.id} className="puja-card">
-                <div className="card-top">
-                  <div>
-                    <h3>{puja.title}</h3>
-                    <p className="subtle-text">{puja.category} • {puja.duration}</p>
-                    { (puja.purohit_name || puja.purohit_id) && (
-                      <p className="subtle-text" style={{ marginTop: 6 }}>
-                        Assigned Purohit: {puja.purohit_name || `#${puja.purohit_id}`}
-                      </p>
-                    ) }
-                  </div>
-                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  {puja.title}
+                </h2>
 
-                <p className="card-description">{puja.description}</p>
+                <p className="text-sm text-gray-500 mb-2">
+                  {puja.category}
+                </p>
 
-                <div className="card-details">
-                  {puja.benefits && (
-                    <div>
-                      <p className="detail-title">Benefits</p>
-                      {renderDetailList(puja.benefits)}
-                    </div>
-                  )}
+                <p className="text-gray-700 mb-3">
+                  {puja.description}
+                </p>
 
-                  {(puja.best_time || puja.bestTime) && (
-                    <div>
-                      <p className="detail-title">Best Time</p>
-                      <p>{puja.best_time || puja.bestTime}</p>
-                    </div>
-                  )}
+                <p className="text-sm text-gray-500">
+                  Duration: {puja.duration}
+                </p>
 
-                  {puja.mantras && (
-                    <div>
-                      <p className="detail-title">Mantras</p>
-                      {renderDetailList(puja.mantras)}
-                    </div>
-                  )}
+                <div className="flex gap-3 mt-5">
 
-                  {puja.procedures && (
-                    <div>
-                      <p className="detail-title">Procedures</p>
-                      {renderDetailList(puja.procedures)}
-                    </div>
-                  )}
-
-                  {puja.ingredients && (
-                    <div>
-                      <p className="detail-title">Ingredients</p>
-                      {renderDetailList(puja.ingredients)}
-                    </div>
-                  )}
-
-                  {puja.rules && (
-                    <div>
-                      <p className="detail-title">Rules</p>
-                      {renderDetailList(puja.rules)}
-                    </div>
-                  )}
-
-                  {puja.checklist && (
-                    <div>
-                      <p className="detail-title">Checklist</p>
-                      {renderDetailList(puja.checklist)}
-                    </div>
-                  )}
-
-                  {(puja.purohit_name || puja.purohit_id) && (
-                    <div>
-                      <p className="detail-title">Purohit</p>
-                      <p>{puja.purohit_name || puja.purohit_id}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="card-actions">
-                  <button type="button" className="secondary-button" onClick={() => handleEdit(puja)}>
+                  <button
+                    onClick={() => handleEdit(puja)}
+                    className="flex-1 bg-blue-500 text-white py-2 rounded-xl"
+                  >
                     Edit
                   </button>
-                  <button type="button" className="danger-button" onClick={() => handleDelete(puja.id)}>
+
+                  <button
+                    onClick={() => handleDelete(puja.id)}
+                    className="flex-1 bg-red-500 text-white py-2 rounded-xl"
+                  >
                     Delete
                   </button>
+
                 </div>
-              </article>
+
+              </div>
             ))}
+
           </div>
 
-          <div style={{ marginTop: 28 }}>
-            <p className="panel-label">Available Purohits</p>
-            <div style={{ display: "grid", gap: 12, marginTop: 8 }}>
-              {purohits.length === 0 && <div style={{ color: "#666" }}>No purohits yet.</div>}
-              {purohits.map((p) => (
-                <div key={p.id} style={{ border: "1px solid rgba(0,0,0,0.06)", padding: 12, borderRadius: 8, background: "#fff" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <strong>{p.name}</strong>
-                      <div style={{ color: "#666", fontSize: 13 }}>{p.specialization} • {p.experience}</div>
-                    </div>
-                    <div style={{ textAlign: "right", color: "#444" }}>
-                      <div style={{ fontSize: 13 }}>{p.contact}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+        </div>
+
+      </div>
+
     </div>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;
