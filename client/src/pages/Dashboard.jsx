@@ -1,24 +1,23 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 
 function Dashboard() {
   const [pujas, setPujas] = useState([]);
-
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: "",
     duration: "",
   });
-
   const [editingId, setEditingId] = useState(null);
 
   const fetchPujas = async () => {
     try {
       const res = await api.get("/pujas");
-      setPujas(res.data.data || []);
+      setPujas(res.data || []);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -26,41 +25,32 @@ function Dashboard() {
     fetchPujas();
   }, []);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
       if (editingId) {
         await api.put(`/pujas/${editingId}`, formData);
       } else {
         await api.post("/pujas", formData);
       }
-
-      setFormData({
-        title: "",
-        category: "",
-        description: "",
-        duration: "",
-      });
-
+      setFormData({ title: "", category: "", description: "", duration: "" });
       setEditingId(null);
-
       fetchPujas();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
   const handleEdit = (puja) => {
     setEditingId(puja.id);
-
     setFormData({
       title: puja.title || "",
       category: puja.category || "",
@@ -74,7 +64,7 @@ function Dashboard() {
       await api.delete(`/pujas/${id}`);
       fetchPujas();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -84,143 +74,184 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
-
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Puja Dashboard
-          </h1>
-
-          <p className="text-gray-600">
-            Manage your pujas easily
-          </p>
-        </div>
-
-        <button
-          onClick={logoutHandler}
-          className="bg-black text-white px-5 py-2 rounded-xl"
-        >
-          Logout
-        </button>
-
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Form */}
-        <div className="bg-white p-6 rounded-2xl shadow-md">
-
-          <h2 className="text-2xl font-bold mb-5">
-            {editingId ? "Edit Puja" : "Add Puja"}
-          </h2>
-
-          <form onSubmit={handleSubmit}>
-
-            <input
-              type="text"
-              name="title"
-              placeholder="Title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
-            />
-
-            <input
-              type="text"
-              name="category"
-              placeholder="Category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
-            />
-
-            <textarea
-              name="description"
-              placeholder="Description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
-            />
-
-            <input
-              type="text"
-              name="duration"
-              placeholder="Duration"
-              value={formData.duration}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
-            />
-
-            <button
-              type="submit"
-              className="w-full bg-black text-white py-3 rounded-xl font-semibold"
-            >
-              {editingId ? "Update Puja" : "Add Puja"}
-            </button>
-
-          </form>
-        </div>
-
-        {/* Puja List */}
-        <div className="lg:col-span-2">
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            {pujas.map((puja) => (
-              <div
-                key={puja.id}
-                className="bg-white p-5 rounded-2xl shadow-md"
+    <div className="min-h-screen bg-slate-100/70 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="overflow-hidden rounded-[2.25rem] bg-gradient-to-r from-orange-500 via-fuchsia-500 to-violet-600 p-6 text-white shadow-2xl shadow-fuchsia-300/30">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-sm uppercase tracking-[0.35em] text-orange-100/90">Puja management</p>
+              <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Beautiful dashboard built for speed</h1>
+              <p className="mt-4 max-w-2xl text-base text-orange-100/90">A rich admin experience with bolder cards, vivid color accents, and easy access to your most important workflows.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to="/pujas"
+                className="inline-flex items-center justify-center rounded-full bg-white/95 px-5 py-3 text-sm font-semibold text-orange-600 shadow-md shadow-orange-500/20 transition hover:bg-white"
               >
+                Pujas
+              </Link>
+              <Link
+                to="/purohits"
+                className="inline-flex items-center justify-center rounded-full bg-white/10 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-white/20"
+              >
+                Purohits
+              </Link>
+              <button
+                type="button"
+                onClick={logoutHandler}
+                className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
 
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  {puja.title}
-                </h2>
-
-                <p className="text-sm text-gray-500 mb-2">
-                  {puja.category}
-                </p>
-
-                <p className="text-gray-700 mb-3">
-                  {puja.description}
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  Duration: {puja.duration}
-                </p>
-
-                <div className="flex gap-3 mt-5">
-
-                  <button
-                    onClick={() => handleEdit(puja)}
-                    className="flex-1 bg-blue-500 text-white py-2 rounded-xl"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(puja.id)}
-                    className="flex-1 bg-red-500 text-white py-2 rounded-xl"
-                  >
-                    Delete
-                  </button>
-
+        <div className="grid gap-5 lg:grid-cols-[420px_minmax(0,1fr)]">
+          <div className="grid gap-5">
+            <section className="overflow-hidden rounded-[1.75rem] bg-white p-6 shadow-xl shadow-slate-200/20 ring-1 ring-slate-200/70">
+              <p className="text-sm uppercase tracking-[0.35em] text-orange-500">Active overview</p>
+              <h2 className="mt-3 text-3xl font-semibold text-slate-900">Pujas in catalog</h2>
+              <p className="mt-3 max-w-xl text-sm text-slate-600">A fast snapshot of how many pujas are live and your current dashboard status.</p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-[1.75rem] bg-orange-50 p-5 shadow-sm shadow-orange-200/20">
+                  <p className="text-xs uppercase tracking-[0.35em] text-orange-600">Total pujas</p>
+                  <p className="mt-3 text-4xl font-bold text-orange-700">{pujas.length}</p>
                 </div>
-
+                <div className="rounded-[1.75rem] bg-slate-950 p-5 text-white shadow-sm shadow-slate-900/10">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300">Current state</p>
+                  <p className="mt-3 text-4xl font-bold">{editingId ? "Editing" : "Ready"}</p>
+                </div>
               </div>
-            ))}
+            </section>
 
+            <section className="overflow-hidden rounded-[1.75rem] bg-slate-950 p-6 shadow-xl shadow-slate-900/20">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Fast actions</h2>
+                  <p className="mt-2 text-sm text-slate-300">Jump to workflows, open puja listings, or start editing right away.</p>
+                </div>
+                <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white/90">Quick launch</span>
+              </div>
+              <div className="mt-5 grid gap-3">
+                <Link to="/pujas" className="rounded-3xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-300/20 transition hover:from-orange-600 hover:to-rose-600">
+                  Browse pujas
+                </Link>
+                <Link to="/purohits" className="rounded-3xl bg-slate-800 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-slate-900/20 transition hover:bg-slate-700">
+                  Browse purohits
+                </Link>
+                <button type="button" onClick={logoutHandler} className="rounded-3xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15">
+                  Logout now
+                </button>
+              </div>
+            </section>
           </div>
 
+          <section className="overflow-hidden rounded-[1.75rem] bg-white p-6 shadow-xl shadow-slate-200/20 ring-1 ring-slate-200/70">
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.35em] text-orange-500">Puja form</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">{editingId ? "Edit Puja" : "Add Puja"}</h2>
+              </div>
+              <span className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-700">
+                {editingId ? "Editing an entry" : "Create a new puja"}
+              </span>
+            </div>
+            <form onSubmit={handleSubmit} className="grid gap-3">
+              <input
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Title"
+                className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+              />
+              <input
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                placeholder="Category"
+                className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+              />
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Description"
+                className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+              />
+              <input
+                name="duration"
+                value={formData.duration}
+                onChange={handleChange}
+                placeholder="Duration"
+                className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+              />
+              <button
+                type="submit"
+                className="w-full rounded-3xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-300/20 transition hover:from-orange-600 hover:to-rose-600"
+              >
+                {editingId ? "Update Puja" : "Add Puja"}
+              </button>
+            </form>
+          </section>
         </div>
 
+        <section className="overflow-hidden rounded-[1.75rem] bg-white p-6 shadow-xl shadow-slate-200/20 ring-1 ring-slate-200/70">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.35em] text-orange-500">Recent pujas</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-900">Latest catalog</h2>
+            </div>
+            <span className="rounded-full bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-700">{pujas.length} puja{pujas.length === 1 ? "" : "s"}</span>
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {pujas.length === 0 ? (
+              <div className="rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 p-6 text-slate-500">
+                No pujas yet. Use the form to add your first entry.
+              </div>
+            ) : (
+              pujas.map((puja) => (
+                <article
+                  key={puja.id || puja._id}
+                  className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm shadow-slate-200/30 transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.35em] text-orange-500">{puja.category}</p>
+                      <h3 className="mt-2 text-xl font-semibold text-slate-900">{puja.title}</h3>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{puja.duration || "Duration"}</span>
+                  </div>
+                  <p className="text-slate-600">{puja.description}</p>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(puja)}
+                      className="rounded-3xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(puja.id)}
+                      className="rounded-3xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
       </div>
-
     </div>
   );
 }
 
 export default Dashboard;
+
+<div className="bg-red-500 text-white p-10">
+  Tailwind Test
+</div>
