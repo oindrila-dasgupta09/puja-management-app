@@ -75,6 +75,12 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-100/70 px-4 py-8 sm:px-6 lg:px-8">
+      <h1 className="text-7xl font-bold text-red-600">
+  OINDRILA TEST 999
+</h1>
+      <div className="bg-red-500 text-white text-4xl p-10 rounded-3xl shadow-2xl">
+  TAILWIND WORKING
+</div>
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="overflow-hidden rounded-[2.25rem] bg-gradient-to-r from-orange-500 via-fuchsia-500 to-violet-600 p-6 text-white shadow-2xl shadow-fuchsia-300/30">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -252,6 +258,3 @@ function Dashboard() {
 
 export default Dashboard;
 
-<div className="bg-red-500 text-white p-10">
-  Tailwind Test
-</div>
