@@ -101,10 +101,7 @@ function Pujas() {
               <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Pujas</h1>
               <p className="mt-4 text-base text-orange-100/90">A bright, modern place to add, edit, and manage your puja catalog with style.</p>
             </div>
-            <div className="inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10">
-              <span className="rounded-full bg-white/20 px-3 py-1">{pujas.length}</span>
-              <span>{pujas.length === 1 ? "Puja" : "Pujas"}</span>
-            </div>
+        
           </div>
         </header>
 
@@ -112,7 +109,7 @@ function Pujas() {
           <section className="overflow-hidden rounded-[1.75rem] bg-white p-6 shadow-xl shadow-slate-200/20 ring-1 ring-slate-200/80">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-2xl font-semibold text-slate-900">{editingId ? "Edit Puja" : "Add Puja"}</h2>
+                <h2 className="text-2xl font-semibold text-slate-900">{editingId ? "Edit Puja" : "Add Puja Details"}</h2>
                 <p className="mt-2 text-sm text-slate-500">Use this form to create or update puja details instantly.</p>
               </div>
               <span className="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">{editingId ? "Editing existing" : "New entry"}</span>

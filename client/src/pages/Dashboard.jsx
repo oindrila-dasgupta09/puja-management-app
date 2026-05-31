@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 
+
 function Dashboard() {
   const [pujas, setPujas] = useState([]);
+  const [purohits, setPurohits] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: "",
     duration: "",
+    purohit_id: "",
   });
   const [editingId, setEditingId] = useState(null);
 
@@ -21,9 +24,20 @@ function Dashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchPujas();
-  }, []);
+
+  const fetchPurohits = async () => {
+  try {
+    const res = await api.get("/purohits");
+    setPurohits(res.data || []);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+ useEffect(() => {
+  fetchPujas();
+  fetchPurohits();
+}, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -41,7 +55,13 @@ function Dashboard() {
       } else {
         await api.post("/pujas", formData);
       }
-      setFormData({ title: "", category: "", description: "", duration: "" });
+      setFormData({
+  title: "",
+  category: "",
+  description: "",
+  duration: "",
+  purohit_id: "",
+});
       setEditingId(null);
       fetchPujas();
     } catch (err) {
@@ -51,12 +71,13 @@ function Dashboard() {
 
   const handleEdit = (puja) => {
     setEditingId(puja.id);
-    setFormData({
-      title: puja.title || "",
-      category: puja.category || "",
-      description: puja.description || "",
-      duration: puja.duration || "",
-    });
+   setFormData({
+  title: puja.title || "",
+  category: puja.category || "",
+  description: puja.description || "",
+  duration: puja.duration || "",
+  purohit_id: puja.purohit_id || "",
+});
   };
 
   const handleDelete = async (id) => {
@@ -85,25 +106,8 @@ function Dashboard() {
               <p className="mt-4 max-w-2xl text-base text-orange-100/90">A rich admin experience with bolder cards, vivid color accents, and easy access to your most important workflows.</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <Link
-                to="/pujas"
-                className="inline-flex items-center justify-center rounded-full bg-white/95 px-5 py-3 text-sm font-semibold text-orange-600 shadow-md shadow-orange-500/20 transition hover:bg-white"
-              >
-                Pujas
-              </Link>
-              <Link
-                to="/purohits"
-                className="inline-flex items-center justify-center rounded-full bg-white/10 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-white/20"
-              >
-                Purohits
-              </Link>
-              <button
-                type="button"
-                onClick={logoutHandler}
-                className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
-              >
-                Logout
-              </button>
+          
+              
             </div>
           </div>
         </div>
@@ -188,12 +192,38 @@ function Dashboard() {
                 placeholder="Duration"
                 className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
               />
-              <button
-                type="submit"
-                className="w-full rounded-3xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-300/20 transition hover:from-orange-600 hover:to-rose-600"
-              >
-                {editingId ? "Update Puja" : "Add Puja"}
-              </button>
+
+{/* Purohit Dropdown */}
+<div className="flex gap-2">
+  <select
+    name="purohit_id"
+    value={formData.purohit_id}
+    onChange={handleChange}
+    className="flex-1 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900"
+  >
+    <option value="">Select Purohit</option>
+
+    {purohits.map((purohit) => (
+      <option key={purohit.id} value={purohit.id}>
+        {purohit.name}
+      </option>
+    ))}
+  </select>
+
+  <Link
+    to="/purohits"
+    className="rounded-3xl bg-orange-500 px-4 py-3 text-white font-semibold hover:bg-orange-600"
+  >
+    + Add
+  </Link>
+</div>
+
+<button
+  type="submit"
+  className="w-full rounded-3xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-300/20 transition hover:from-orange-600 hover:to-rose-600"
+>
+  {editingId ? "Update Puja" : "Add Puja"}
+</button>
             </form>
           </section>
         </div>
